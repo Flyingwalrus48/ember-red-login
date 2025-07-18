@@ -52,6 +52,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Firefighter theme colors
+				emergency: {
+					DEFAULT: 'hsl(var(--emergency-red))',
+					hover: 'hsl(var(--emergency-red-hover))',
+					muted: 'hsl(var(--emergency-red-muted))'
+				},
+				charcoal: {
+					DEFAULT: 'hsl(var(--charcoal))',
+					deep: 'hsl(var(--deep-charcoal))',
+					light: 'hsl(var(--charcoal-light))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
