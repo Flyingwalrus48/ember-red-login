@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Flame } from "lucide-react";
+import { Shield, Flame, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
@@ -13,27 +13,51 @@ const LoginPage = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Loading and error states
+  const [isSignInLoading, setIsSignInLoading] = useState(false);
+  const [isSignUpLoading, setIsSignUpLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
+  const [signInError, setSignInError] = useState("");
+  const [signUpError, setSignUpError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSignInLoading(true);
+    setSignInError("");
+    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
-      console.log("Login successful");
     } catch (error) {
-      console.error("Login error:", error);
+      setSignInError("Invalid email or password. Please check your credentials and try again.");
+    } finally {
+      setIsSignInLoading(false);
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSignUpLoading(true);
+    setSignUpError("");
+    
     if (signupPassword !== confirmPassword) {
-      console.error("Passwords don't match");
+      setSignUpError("Passwords don't match. Please try again.");
+      setIsSignUpLoading(false);
       return;
     }
+    
+    if (signupPassword.length < 6) {
+      setSignUpError("Password must be at least 6 characters long.");
+      setIsSignUpLoading(false);
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signUp({
         email: signupEmail,
@@ -43,9 +67,33 @@ const LoginPage = () => {
         }
       });
       if (error) throw error;
-      console.log("Account created successfully");
+      setResetMessage("Account created! Please check your email to verify your account.");
     } catch (error) {
-      console.error("Signup error:", error);
+      setSignUpError("Unable to create account. Please try again or contact support.");
+    } finally {
+      setIsSignUpLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!resetEmail) {
+      setResetMessage("Please enter your email address first.");
+      return;
+    }
+    
+    setIsResetLoading(true);
+    setResetMessage("");
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/`,
+      });
+      if (error) throw error;
+      setResetMessage("Password reset email sent! Please check your inbox.");
+    } catch (error) {
+      setResetMessage("Unable to send reset email. Please try again.");
+    } finally {
+      setIsResetLoading(false);
     }
   };
 
@@ -88,8 +136,13 @@ const LoginPage = () => {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setResetEmail(e.target.value);
+                      if (signInError) setSignInError("");
+                    }}
                     required
+                    disabled={isSignInLoading}
                     className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
@@ -103,29 +156,63 @@ const LoginPage = () => {
                     type="password"
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (signInError) setSignInError("");
+                    }}
                     required
+                    disabled={isSignInLoading}
                     className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
+
+                {signInError && (
+                  <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>{signInError}</span>
+                  </div>
+                )}
 
                 <Button
                   type="submit"
                   variant="emergency"
                   size="lg"
                   className="w-full"
+                  disabled={isSignInLoading}
                 >
-                  Sign In
+                  {isSignInLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Signing In...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
                 </Button>
 
                 <div className="text-center">
                   <button
                     type="button"
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm underline-offset-4 hover:underline"
+                    onClick={handlePasswordReset}
+                    disabled={isResetLoading}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm underline-offset-4 hover:underline disabled:opacity-50"
                   >
-                    Forgot Password?
+                    {isResetLoading ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin inline mr-1" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Forgot Password?"
+                    )}
                   </button>
                 </div>
+
+                {resetMessage && (
+                  <div className="text-center text-sm text-primary bg-primary/10 p-3 rounded-md border border-primary/20">
+                    {resetMessage}
+                  </div>
+                )}
               </form>
             </TabsContent>
 
@@ -141,8 +228,13 @@ const LoginPage = () => {
                     type="email"
                     placeholder="Enter your email"
                     value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
+                    onChange={(e) => {
+                      setSignupEmail(e.target.value);
+                      if (signUpError) setSignUpError("");
+                      if (resetMessage) setResetMessage("");
+                    }}
                     required
+                    disabled={isSignUpLoading}
                     className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
@@ -154,10 +246,15 @@ const LoginPage = () => {
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="Create a password"
+                    placeholder="Create a password (min. 6 characters)"
                     value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
+                    onChange={(e) => {
+                      setSignupPassword(e.target.value);
+                      if (signUpError) setSignUpError("");
+                      if (resetMessage) setResetMessage("");
+                    }}
                     required
+                    disabled={isSignUpLoading}
                     className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
@@ -171,19 +268,45 @@ const LoginPage = () => {
                     type="password"
                     placeholder="Confirm your password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (signUpError) setSignUpError("");
+                      if (resetMessage) setResetMessage("");
+                    }}
                     required
+                    disabled={isSignUpLoading}
                     className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:ring-primary focus:border-primary"
                   />
                 </div>
+
+                {signUpError && (
+                  <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>{signUpError}</span>
+                  </div>
+                )}
+
+                {resetMessage && (
+                  <div className="text-center text-sm text-primary bg-primary/10 p-3 rounded-md border border-primary/20">
+                    {resetMessage}
+                  </div>
+                )}
 
                 <Button
                   type="submit"
                   variant="emergency"
                   size="lg"
                   className="w-full"
+                  disabled={isSignUpLoading}
                 >
-                  Create Account
+                  {isSignUpLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )}
                 </Button>
               </form>
             </TabsContent>
