@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, MapPin, Briefcase, MessageCircle, Instagram, Plus, UserPlus } from "lucide-react";
+import { Users, MapPin, Briefcase, MessageCircle, Instagram, Plus, UserPlus, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const ServicedinPage = () => {
   const navigate = useNavigate();
@@ -47,15 +48,67 @@ const ServicedinPage = () => {
     }
   ]);
 
-  const [userProfile] = useState({
-    name: "Alex Thompson",
-    title: "Fire Academy Graduate",
-    location: "Phoenix, AZ",
-    bio: "Recent fire academy graduate passionate about emergency response and community service. Currently seeking opportunities in municipal fire departments.",
-    specialties: ["Emergency Medical Services", "Physical Fitness"],
+  const [userProfile, setUserProfile] = useState({
+    name: "",
+    title: "",
+    location: "",
+    bio: "",
+    specialties: [] as string[],
     connectionsCount: 47,
     hasInstagram: false
   });
+  
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  // Fetch current user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch user profile from Supabase
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+
+        // Update profile state with fetched data or defaults
+        if (profileData) {
+          setUserProfile({
+            name: profileData.name || "Firefighter",
+            title: profileData.title || "Fire Academy Graduate",
+            location: profileData.location || "Location not set",
+            bio: profileData.bio || "Professional firefighter focused on emergency response and community service.",
+            specialties: profileData.specialties || [],
+            connectionsCount: 47, // Keep static for now
+            hasInstagram: false
+          });
+        } else {
+          // No profile found - set defaults with user's email info
+          setUserProfile(prev => ({
+            ...prev,
+            name: user.email?.split('@')[0] || "Firefighter",
+            title: "Fire Academy Graduate",
+            location: "Location not set"
+          }));
+        }
+      } catch (error) {
+        console.error('Error in fetchUserProfile:', error);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleConnect = (userId: number) => {
     setConnections(prev => 
@@ -83,51 +136,62 @@ const ServicedinPage = () => {
           <CardTitle>Your Profile</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-start space-x-4">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src="" />
-              <AvatarFallback className="text-lg">{userProfile.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-2">
-              <div>
-                <h3 className="text-lg font-semibold">{userProfile.name}</h3>
-                <p className="text-primary font-medium">{userProfile.title}</p>
-                <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{userProfile.location}</span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">{userProfile.bio}</p>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{userProfile.connectionsCount} connections</span>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {userProfile.specialties.map((specialty, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {specialty}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate('/profile')}
-                >
-                  Edit Profile
-                </Button>
-                {!userProfile.hasInstagram && (
-                  <Button variant="outline" size="sm" className="flex items-center space-x-1">
-                    <Instagram className="h-4 w-4" />
-                    <span>Connect Instagram</span>
-                  </Button>
-                )}
+          {isLoadingProfile ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="text-muted-foreground">Loading profile...</span>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-start space-x-4">
+              <Avatar className="w-16 h-16">
+                <AvatarImage src="" />
+                <AvatarFallback className="text-lg">
+                  {userProfile.name ? userProfile.name.split(' ').map(n => n[0]).join('') : 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-2">
+                <div>
+                  <h3 className="text-lg font-semibold">{userProfile.name || 'Your Name'}</h3>
+                  <p className="text-primary font-medium">{userProfile.title || 'Your Title'}</p>
+                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span>{userProfile.location || 'Your Location'}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">{userProfile.bio || 'Add your professional bio to let others know about your firefighting journey.'}</p>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{userProfile.connectionsCount} connections</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {userProfile.specialties.map((specialty, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {specialty}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/profile')}
+                  >
+                    Edit Profile
+                  </Button>
+                  {!userProfile.hasInstagram && (
+                    <Button variant="outline" size="sm" className="flex items-center space-x-1">
+                      <Instagram className="h-4 w-4" />
+                      <span>Connect Instagram</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -5,15 +5,6 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://kjxmtxlifxcaddgrukrq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqeG10eGxpZnhjYWRkZ3J1a3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NzkxOTAsImV4cCI6MjA2ODQ1NTE5MH0.o0Z3NvL28H5MzHzfDjJLkwpfwWLsWLMGakgWFa0KKeE";
 
-// --- ADD THESE LINES FOR DEBUGGING ---
-console.log("--- SUPABASE CREDENTIALS CHECK ---");
-console.log("URL Used by App:", SUPABASE_URL);
-console.log("Anon Key Used by App:", SUPABASE_PUBLISHABLE_KEY);
-console.log("URL Length:", SUPABASE_URL.length);
-console.log("Key Length:", SUPABASE_PUBLISHABLE_KEY.length);
-console.log("Key starts with:", SUPABASE_PUBLISHABLE_KEY.substring(0, 20) + "...");
-console.log("Key ends with:", "..." + SUPABASE_PUBLISHABLE_KEY.substring(SUPABASE_PUBLISHABLE_KEY.length - 20));
-// ------------------------------------
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
