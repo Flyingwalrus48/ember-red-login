@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, MapPin, Briefcase, MessageCircle, Instagram, Plus, UserPlus } from "lucide-react";
 
 const ServicedinPage = () => {
+  const navigate = useNavigate();
   const [connections, setConnections] = useState([
     {
       id: 1,
@@ -110,7 +112,11 @@ const ServicedinPage = () => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/profile')}
+                >
                   Edit Profile
                 </Button>
                 {!userProfile.hasInstagram && (
