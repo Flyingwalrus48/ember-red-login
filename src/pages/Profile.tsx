@@ -131,19 +131,6 @@ const Profile = () => {
 
       console.log('📝 Profile data to save:', profileData);
 
-      // Check if table exists and we can connect to Supabase
-      console.log('🔍 Testing Supabase connection...');
-      const { data: testData, error: testError } = await supabase
-        .from('profiles')
-        .select('count(*)', { count: 'exact', head: true });
-      
-      if (testError) {
-        console.error('❌ Supabase connection/table error:', testError);
-        throw new Error(`Database connection failed: ${testError.message}`);
-      }
-      
-      console.log('✅ Supabase connection successful');
-
       // Use upsert (insert or update) for more reliable operation
       console.log('💾 Attempting upsert operation...');
       const { data, error } = await supabase
