@@ -16,62 +16,66 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
-          id: string
+          avatar_url: string | null
+          bio: string | null
+          certifications: string[] | null
           created_at: string
+          email: string | null
+          experience: string | null
+          id: string
+          is_public: boolean | null
+          linkedin_url: string | null
+          location: string | null
+          mentor_status: string | null
+          name: string | null
+          other_social_url: string | null
+          phone: string | null
+          specialties: string[] | null
+          title: string | null
           updated_at: string
           user_id: string
-          name: string | null
-          title: string | null
-          location: string | null
-          bio: string | null
-          email: string | null
-          phone: string | null
-          experience: string | null
-          specialties: string[] | null
-          certifications: string[] | null
-          avatar_url: string | null
         }
         Insert: {
-          id?: string
+          avatar_url?: string | null
+          bio?: string | null
+          certifications?: string[] | null
           created_at?: string
+          email?: string | null
+          experience?: string | null
+          id?: string
+          is_public?: boolean | null
+          linkedin_url?: string | null
+          location?: string | null
+          mentor_status?: string | null
+          name?: string | null
+          other_social_url?: string | null
+          phone?: string | null
+          specialties?: string[] | null
+          title?: string | null
           updated_at?: string
           user_id: string
-          name?: string | null
-          title?: string | null
-          location?: string | null
-          bio?: string | null
-          email?: string | null
-          phone?: string | null
-          experience?: string | null
-          specialties?: string[] | null
-          certifications?: string[] | null
-          avatar_url?: string | null
         }
         Update: {
-          id?: string
+          avatar_url?: string | null
+          bio?: string | null
+          certifications?: string[] | null
           created_at?: string
+          email?: string | null
+          experience?: string | null
+          id?: string
+          is_public?: boolean | null
+          linkedin_url?: string | null
+          location?: string | null
+          mentor_status?: string | null
+          name?: string | null
+          other_social_url?: string | null
+          phone?: string | null
+          specialties?: string[] | null
+          title?: string | null
           updated_at?: string
           user_id?: string
-          name?: string | null
-          title?: string | null
-          location?: string | null
-          bio?: string | null
-          email?: string | null
-          phone?: string | null
-          experience?: string | null
-          specialties?: string[] | null
-          certifications?: string[] | null
-          avatar_url?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {
