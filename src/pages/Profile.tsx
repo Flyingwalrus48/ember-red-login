@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Upload, MapPin, Briefcase, Shield, Flame, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +27,12 @@ const Profile = () => {
     email: "",
     phone: "",
     experience: "",
-    certifications: [] as string[]
+    certifications: [] as string[],
+    is_public: false,
+    fire_school: "",
+    mentorship_status: "not_available",
+    linkedin_url: "",
+    path_accomplishment: ""
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -74,13 +81,23 @@ const Profile = () => {
             phone: profileData.phone || "",
             experience: profileData.experience || "",
             specialties: profileData.specialties || [],
-            certifications: profileData.certifications || []
+            certifications: profileData.certifications || [],
+            is_public: profileData.is_public || false,
+            fire_school: profileData.fire_school || "",
+            mentorship_status: profileData.mentor_status || "not_available",
+            linkedin_url: profileData.linkedin_url || "",
+            path_accomplishment: profileData.path_accomplishment || ""
           });
         } else {
           // Set default email from auth user
           setProfile(prev => ({
             ...prev,
-            email: user.email || ""
+            email: user.email || "",
+            is_public: false,
+            fire_school: "",
+            mentorship_status: "not_available",
+            linkedin_url: "",
+            path_accomplishment: ""
           }));
         }
       } catch (error) {
@@ -126,6 +143,12 @@ const Profile = () => {
         experience: profile.experience || null,
         specialties: profile.specialties.length > 0 ? profile.specialties : null,
         certifications: profile.certifications.length > 0 ? profile.certifications : null,
+        is_public: profile.is_public || null,
+        fire_school: profile.fire_school || null,
+        mentor_status: profile.mentorship_status || null,
+        linkedin_url: profile.linkedin_url || null,
+        path_accomplishment: profile.path_accomplishment || null,
+        other_social_url: null,
         updated_at: new Date().toISOString()
       };
 
@@ -178,10 +201,10 @@ const Profile = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setProfile(prev => ({
       ...prev,
-      [field]: value
+      [field]: field === 'is_public' ? value === 'true' || value === true : value
     }));
   };
 
@@ -440,6 +463,109 @@ const Profile = () => {
                   <p>{profile.phone}</p>
                 )}
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+                {isEditing ? (
+                  <Input
+                    id="linkedin_url"
+                    type="url"
+                    value={profile.linkedin_url}
+                    onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                    placeholder="https://linkedin.com/in/yourname"
+                  />
+                ) : (
+                  <p>{profile.linkedin_url}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Professional Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Professional Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fire_school">Fire School Graduated From</Label>
+                {isEditing ? (
+                  <Input
+                    id="fire_school"
+                    value={profile.fire_school}
+                    onChange={(e) => handleInputChange('fire_school', e.target.value)}
+                    placeholder="e.g., State Fire Academy"
+                  />
+                ) : (
+                  <p>{profile.fire_school || "Not specified"}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="mentorship_status">Mentorship Status</Label>
+                {isEditing ? (
+                  <Select 
+                    value={profile.mentorship_status} 
+                    onValueChange={(value) => handleInputChange('mentorship_status', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="not_available">Not specified</SelectItem>
+                      <SelectItem value="seeking_mentorship">Seeking Mentorship</SelectItem>
+                      <SelectItem value="willing_to_mentor">Willing to Mentor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p>{profile.mentorship_status === 'not_available' ? 'Not specified' : profile.mentorship_status === 'seeking_mentorship' ? 'Seeking Mentorship' : profile.mentorship_status === 'willing_to_mentor' ? 'Willing to Mentor' : profile.mentorship_status}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="path_accomplishment">Recent PATH Accomplishment</Label>
+              {isEditing ? (
+                <Textarea
+                  id="path_accomplishment"
+                  value={profile.path_accomplishment}
+                  onChange={(e) => handleInputChange('path_accomplishment', e.target.value)}
+                  placeholder="Describe your recent PATH accomplishment or achievement..."
+                  rows={3}
+                />
+              ) : (
+                <p>{profile.path_accomplishment || "No recent PATH accomplishment listed"}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Privacy Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Privacy Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="is_public">Make my profile visible in the Community Hub</Label>
+                <p className="text-sm text-muted-foreground">
+                  Allow other members to view your profile and connect with you
+                </p>
+              </div>
+              {isEditing ? (
+                <Switch
+                  id="is_public"
+                  checked={profile.is_public}
+                  onCheckedChange={(checked) => handleInputChange('is_public', checked)}
+                />
+              ) : (
+                <span className={`px-2 py-1 rounded text-sm ${profile.is_public ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                  {profile.is_public ? 'Public' : 'Private'}
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
