@@ -1,22 +1,24 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Home, MapPin, Brain, Users, LogOut, Shield, Flame } from "lucide-react";
+import { Home, MapPin, Brain, Users, LogOut, Shield, Flame, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import HomePage from "./dashboard/HomePage";
 import PathPage from "./dashboard/PathPage";
 import FireAIPage from "./dashboard/FireAIPage";
 import ServicedinPage from "./dashboard/ServicedinPage";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("home");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
 
   // Check for tab parameter in URL and set active tab accordingly
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['home', 'path', 'fireai', 'servicedin'].includes(tabParam)) {
+    if (tabParam && ['home', 'path', 'fireai', 'servicedin', 'quizzes'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
@@ -36,6 +38,7 @@ const Dashboard = () => {
     { id: "path", label: "PATH", icon: MapPin, component: PathPage },
     { id: "fireai", label: "FIREAI", icon: Brain, component: FireAIPage },
     { id: "servicedin", label: "Servicedin", icon: Users, component: ServicedinPage },
+    { id: "quizzes", label: "Quizzes", icon: BookOpen, action: () => navigate('/quizzes') },
   ];
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HomePage;
@@ -92,7 +95,13 @@ const Dashboard = () => {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if (tab.action) {
+                    tab.action();
+                  } else {
+                    setActiveTab(tab.id);
+                  }
+                }}
                 className={`flex flex-col items-center justify-center space-y-1 px-3 py-2 transition-all duration-200 ${
                   isActive 
                     ? "text-primary" 
