@@ -7,7 +7,7 @@ interface Certification {
   id: string;
   certification_name: string;
   status: string;
-  ofai_stage: string | null;
+  ofai_stage?: string | null;
   expiration_date: string | null;
   completion_date: string | null;
   notes: string | null;
