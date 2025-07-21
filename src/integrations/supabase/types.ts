@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      ofai_certifications: {
+        Row: {
+          certification_name: string
+          completion_date: string | null
+          created_at: string | null
+          expiration_date: string | null
+          id: string
+          notes: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          certification_name: string
+          completion_date?: string | null
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          certification_name?: string
+          completion_date?: string | null
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_ofai_certifications_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
