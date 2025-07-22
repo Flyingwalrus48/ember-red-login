@@ -1,51 +1,63 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Home, MapPin, Brain, Users, LogOut, Shield, Flame, BookOpen } from "lucide-react";
+// src/components/Dashboard.tsx
+
+import { useState, useEffect } from "react"; // Keep for `isLoggingOut`
+import { useSearchParams } from "react-router-dom"; // Keep if used elsewhere, or remove if only for tabs
+import { LogOut, Shield, Flame } from "lucide-react"; // Keep only icons relevant to Dashboard's header
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client"; // Keep if used for logout
 import HomePage from "./dashboard/HomePage";
 import PathPage from "./dashboard/PathPage";
 import FireAIPage from "./dashboard/FireAIPage";
 import ServicedinPage from "./dashboard/ServicedinPage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Keep if used for logout redirection
 
 const Dashboard = () => {
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState("home");
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const navigate = useNavigate();
+  // REMOVED: searchParams, activeTab, setActiveTab as they are now in GlobalLayout
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // Only keep if Logout button remains in Dashboard header
+  const navigate = useNavigate(); // Only keep if Logout button remains in Dashboard header
 
-  // Check for tab parameter in URL and set active tab accordingly
-  useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['home', 'path', 'fireai', 'servicedin', 'quizzes'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [searchParams]);
+  // REMOVED: useEffect for tabParam as activeTab is now managed by GlobalLayout
+  // The logic below is from your original Dashboard, if `tabParam` was only for the bottom nav, you can remove this useEffect too.
+  // If Dashboard.tsx still needs to switch its *internal* components based on a tabParam, you might keep a simplified version.
+  // For now, I'm assuming HomePage is always rendered, or the Dashboard page is simpler.
+  // const [activeTab, setActiveTab] = useState("home"); // You'll define active component using this
+  // useEffect(() => {
+  //   const tabParam = searchParams.get('tab');
+  //   if (tabParam && ['home', 'path', 'fireai', 'servicedin', 'quizzes'].includes(tabParam)) {
+  //     setActiveTab(tabParam);
+  //   }
+  // }, [searchParams]);
 
-  const handleLogout = async () => {
+  const handleLogout = async () => { // Keep if logout button remains in Dashboard header
     setIsLoggingOut(true);
     try {
       await supabase.auth.signOut();
+      navigate('/'); // Redirect after logout
     } catch (error) {
       console.error("Error signing out:", error);
       setIsLoggingOut(false);
     }
   };
 
-  const tabs = [
-    { id: "home", label: "Home", icon: Home, component: HomePage },
-    { id: "path", label: "PATH", icon: MapPin, component: PathPage },
-    { id: "fireai", label: "FIREAI", icon: Brain, component: FireAIPage },
-    { id: "servicedin", label: "Servicedin", icon: Users, component: ServicedinPage },
-    { id: "quizzes", label: "Quizzes", icon: BookOpen, action: () => navigate('/quizzes') },
-  ];
+  // REMOVED: tabs array as it's now in GlobalLayout
+  // const tabs = [
+  //   { id: "home", label: "Home", icon: Home, component: HomePage },
+  //   { id: "path", label: "PATH", icon: MapPin, component: PathPage },
+  //   { id: "fireai", label: "FIREAI", icon: Brain, component: FireAIPage },
+  //   { id: "servicedin", label: "Servicedin", icon: Users, component: ServicedinPage },
+  //   { id: "quizzes", label: "Quizzes", icon: BookOpen, action: () => navigate('/quizzes') },
+  // ];
 
-  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HomePage;
+  // If you had multiple components rendered based on activeTab, you'll need to decide how Dashboard renders its content now.
+  // For simplicity, let's assume Dashboard renders HomePage directly as its main content.
+  // If Dashboard page is static or only renders one content, you can remove the ActiveComponent logic.
+  // const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HomePage;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
+    // REMOVED: min-h-screen, now handles content for GlobalLayout's <main>
+    // The main Dashboard content itself. It will grow to fill space.
+    <div className="flex flex-col flex-1 bg-background">
+      {/* Header - Assuming this remains part of Dashboard. If global, move to GlobalLayout */}
       <header className="bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -59,7 +71,7 @@ const Dashboard = () => {
             </div>
           </div>
           <Button
-            onClick={handleLogout}
+            onClick={handleLogout} // Keep if logout button remains in header
             variant="outline"
             size="sm"
             disabled={isLoggingOut}
@@ -80,12 +92,16 @@ const Dashboard = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 pb-20">
-        <ActiveComponent />
+      {/* Main Content Area for Dashboard - Content will fill the space */}
+      {/* We apply flex-1 here so this content area pushes the fixed header up (if header was within Dashboard) */}
+      <div className="flex-1 pb-20 overflow-y-auto"> {/* pb-20 to ensure content isn't hidden by dashboard's own footer if any, or just remove */}
+        {/* Render your Dashboard content here. If Dashboard was switching components, adapt here. */}
+        {/* For now, assuming HomePage as the main dashboard content */}
+        <HomePage />
       </div>
 
-      {/* Bottom Navigation */}
+      {/* REMOVED: Bottom Navigation - It's now in GlobalLayout.tsx */}
+      {/*
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
         <div className="flex justify-around items-center h-16">
           {tabs.map((tab) => {
@@ -118,6 +134,7 @@ const Dashboard = () => {
           })}
         </div>
       </div>
+      */}
     </div>
   );
 };
